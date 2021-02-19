@@ -76,7 +76,7 @@ class DataPrepareController extends Controller
 
         set_time_limit(0);
 
-        $dataMain = UnionData::where("cid","0050011352728")->get();
+        $dataMain = UnionData::get();
         $dataMainArr = [];
 
         $index = 1;
@@ -183,36 +183,36 @@ class DataPrepareController extends Controller
 
         // 1.1 ID และ วันเกิดเหตุ/ตาย
         if ( $IDMatch && $deathDateMatch  ){
-            $matchResult = "1 ID และ วันเกิดเหตุ/ตาย";
+            $matchResult = "1";
         }
 
         // 1.2 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย และ จังหวัดเกิดเหตุ/ตาย
        else  if ( $nameMatch && $deathDateMatch && $provMatch ){
-           $matchResult = "2 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย และ จังหวัดเกิดเหตุ/ตาย";
+           $matchResult = "2";
         }
 
         // 1.3 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย
        else if ( $nameMatch && $deathDateMatch ){
-           $matchResult = "3 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย ";
+           $matchResult = "3";
         }
 
         // 1.4 ชื่อ-สกุล และ จังหวัด
        else if ( $nameMatch && $provMatch ){
 
-           $matchResult = "4 ชื่อ-สกุล และ จังหวัด ";
+           $matchResult = "4";
 
         }
 
         // 1.5 ID
        else if ( $IDMatch){
 
-           $matchResult = "5 ID";
+           $matchResult = "5";
 
         }
 
         // 1.6 ชื่อ-สกุล
        else  if ( $nameMatch){
-           $matchResult = "6 ชื่อ-สกุล";
+           $matchResult = "6";
         }
 
        return $matchResult;
