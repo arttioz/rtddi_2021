@@ -74,41 +74,57 @@ class DataPrepareController extends Controller
 
     public function joinDataLogic(){
 
-        set_time_limit(5000);
+        set_time_limit(0);
 
-        $dataMain = UnionData::get();
+        $dataMain = UnionData::where("cid","0050011352728")->get();
         $dataMainArr = [];
 
+        $index = 1;
         foreach ($dataMain as $row   ) {
-            $dataMainArr[$row->id] = $row;
+            $dataMainArr[$index] = $row;
+            $index++;
         }
 
-         $count = count($dataMain);
-        for($id = 1; $id < $count; $id++){
+         $count = count($dataMainArr);
+        for($i = 1; $i <= $count; $i++){
             $matchResults = [];
-            $row_1 = $dataMainArr[$id];
+            $row_1 = $dataMainArr[$i];
 
-            for($nextID = $id+1; $nextID < $count; $nextID++){
 
-                $row_2 = $dataMainArr[$nextID];
+            for($j = $i+1; $j <= $count; $j++){
+
+                $row_2 = $dataMainArr[$j];
 
                 $matchResult = $this->checkMatch($row_1,$row_2);
-                if(count($matchResult) > 0){
-                    $matchResults[] = $matchResult;
+                if($matchResult != ""){
+                    $match_1 = [];
+                    $match_2 = [];
 
-                    if(isNull($row_2->match_result) ){
+                    $match_1["protocal"] = $matchResult;
+                    $match_1["id"] = $row_2->id;
+
+                    $match_2["protocal"] = $matchResult;
+                    $match_2["id"] = $row_1->id;
+
+                    $matchResults[] = $match_1;
+
+                    if(isNull($row_2->match_result) || $row_2->match_result == "" ){
                         $matchChild = [];
                     }else{
                         $matchChild = json_decode( $row_2->match_result);
                     }
 
-                    $matchChild[] = $matchResult;
+                    $matchChild[] = $match_2;
                     $row_2->match_result = json_encode($matchChild) ;
                     $row_2->save();
+
                 }
             }
-            $row_1->match_result = json_encode($matchResults) ;
-            $row_1->save();
+            if ( count($matchResults) > 0){
+                $row_1->match_result = json_encode($matchResults) ;
+                $row_1->save();
+            }
+
         }
 
     }
@@ -121,7 +137,7 @@ class DataPrepareController extends Controller
         //1.5 ID
         //1.6 ชื่อ-สกุล
 
-        $matchResult = [];
+        $matchResult = "";
 
         $deathDateMatch = false;
         $IDMatch = false;
@@ -129,14 +145,14 @@ class DataPrepareController extends Controller
         $provMatch = false;
 
 
-        if ( !isNull($row_1->deathdate) & !isNull($row_2->deathdate)){
+        if ( $row_1->deathdate != null  & $row_2->deathdate != null ){
             $difDate = Carbon::parse( $row_1->deathdate )->diffInDays( $row_2->deathdate );
             if ($difDate == 0){
                 $deathDateMatch = true;
             }
         }
 
-        if (!isNull($row_1->cid) & !isNull($row_2->cid)){
+        if ($row_1->cid != null  && $row_2->cid != null){
 
             if ( $row_1->cid == $row_2->cid )
             {
@@ -144,17 +160,18 @@ class DataPrepareController extends Controller
             }
         }
 
-        if (!isNull($row_1->firstname) & !isNull($row_2->firstname)  &
-            !isNull($row_1->lastname) & !isNull($row_2->lastname) ){
 
-            if ( $row_1->firstname == $row_2->firstname &
+        if ($row_1->firstname != null && $row_2->firstname != null   &&
+            $row_1->lastname != null && $row_2->lastname != null ){
+
+            if ( $row_1->firstname == $row_2->firstname &&
                 $row_1->lastname == $row_2->lastname)
             {
                 $nameMatch = true;
             }
         }
 
-        if (!isNull($row_1->accprov) & !isNull($row_2->accprov)){
+        if ($row_1->accprov != null & $row_2->accprov != null){
 
             if ( $row_1->accprov == $row_2->accprov )
             {
@@ -166,44 +183,36 @@ class DataPrepareController extends Controller
 
         // 1.1 ID และ วันเกิดเหตุ/ตาย
         if ( $IDMatch && $deathDateMatch  ){
-                $matchResult['protocal'] = "1 ID และ วันเกิดเหตุ/ตาย";
-                $matchResult['id'] = $row_2->id;
-
+            $matchResult = "1 ID และ วันเกิดเหตุ/ตาย";
         }
 
         // 1.2 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย และ จังหวัดเกิดเหตุ/ตาย
        else  if ( $nameMatch && $deathDateMatch && $provMatch ){
-
-            $matchResult['protocal'] = "2 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย และ จังหวัดเกิดเหตุ/ตาย";
-            $matchResult['id'] = $row_2->id;
+           $matchResult = "2 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย และ จังหวัดเกิดเหตุ/ตาย";
         }
 
         // 1.3 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย
        else if ( $nameMatch && $deathDateMatch ){
-
-            $matchResult['protocal'] = "ชื่อ-สกุล และ วันเกิดเหตุ/ตาย ";
-           $matchResult['id'] = $row_2->id;
+           $matchResult = "3 ชื่อ-สกุล และ วันเกิดเหตุ/ตาย ";
         }
 
         // 1.4 ชื่อ-สกุล และ จังหวัด
        else if ( $nameMatch && $provMatch ){
 
-            $matchResult['protocal'] = "ชื่อ-สกุล และ จังหวัด ";
-           $matchResult['id'] = $row_2->id;
+           $matchResult = "4 ชื่อ-สกุล และ จังหวัด ";
+
         }
 
         // 1.5 ID
        else if ( $IDMatch){
 
-            $matchResult['protocal'] = "ID";
-           $matchResult['id'] = $row_2->id;
+           $matchResult = "5 ID";
+
         }
 
         // 1.6 ชื่อ-สกุล
        else  if ( $nameMatch){
-
-            $matchResult['protocal'] = "ชื่อ-สกุล";
-           $matchResult['id'] = $row_2->id;
+           $matchResult = "6 ชื่อ-สกุล";
         }
 
        return $matchResult;
