@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+
+Route::get('/unionData', [\App\Http\Controllers\DataPrepareController::class, 'unionData']);
+Route::get('/joinDataLogic', [\App\Http\Controllers\DataPrepareController::class, 'joinDataLogic']);
