@@ -36,7 +36,7 @@ class PrepareDataController extends Controller
 
         set_time_limit(0);
 
-        $healths = healthhack::whereNull("icd_v")->orderBy("id","ASC")->get();
+        $healths = healthhack::orderBy("id","ASC")->get();
 
         $icdV = ICD10V::get();
         $icdS = ICD10S::get();
@@ -78,6 +78,19 @@ class PrepareDataController extends Controller
             $diags =  $health->diagnosis;
             $diags = $this->splitList($diags);
 
+            $health->s0 = 0;
+            $health->s1 = 0;
+            $health->s2 = 0;
+            $health->s3 = 0;
+            $health->s4 = 0;
+            $health->s5 = 0;
+            $health->s6 = 0;
+            $health->s7 = 0;
+            $health->s8 = 0;
+            $health->s9 = 0;
+            $health->icd_s9_1 = null;
+            $health->icd_s9_2 = null;
+
             foreach ($diags as $diag){
 
                 $diag = $this->replaceCombo($diag);
@@ -92,23 +105,26 @@ class PrepareDataController extends Controller
                             $health->save();
                         }
 
-                    echo $health->id.":".$diag."<br>";
                 }else if (array_key_exists($diag,$icdSs)){
-//                    $diagS= $icdSs[$diag];
-//                    $diagSCode = substr($diagS, 1,1);
-//                    if ($diagSCode >= 0 && $diagS != null){
-//                        $col_diag = "icd_s{$diagSCode}_";
-//                        $col_diagS = "s{$diagSCode}";
-//
-//                        $health->{$col_diagS} = 1;
-//
-//                        if ( $health->{$col_diag."1"} == null){
-//                            $health->{$col_diag."1"} = $diagS;
-//                        }
-//                        else if ( $health->{$col_diag."2"} == null){
-//                            $health->{$col_diag."2"} = $diagS;
-//                        }
-//                    }
+                    $diagS= $icdSs[$diag];
+                    $diagSCode = substr($diagS, 1,1);
+                    if ($diagSCode == 9){
+                        dd($diag,$diagS);
+                    }
+
+                    if ($diagSCode >= 0 && $diagS != null){
+                        $col_diag = "icd_s{$diagSCode}_";
+                        $col_diagS = "s{$diagSCode}";
+
+                        $health->{$col_diagS} = 1;
+
+                        if ( $health->{$col_diag."1"} == null){
+                            $health->{$col_diag."1"} = $diagS;
+                        }
+                        else if ( $health->{$col_diag."2"} == null){
+                            $health->{$col_diag."2"} = $diagS;
+                        }
+                    }
                 }
             }
             $health->save();
@@ -117,6 +133,7 @@ class PrepareDataController extends Controller
 
     public function replaceCombo($lowerD){
         $lowerD = strtolower($lowerD);
+        $lowerD = str_replace("zzz","",$lowerD);
         $lowerD = str_replace(" ","",$lowerD);
         $lowerD = str_replace(",","",$lowerD);
         $lowerD = str_replace(":","",$lowerD);
