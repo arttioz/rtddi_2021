@@ -41,12 +41,15 @@ class PrepareDataController extends Controller
 
         $icdVs = [];
         foreach ($icdV as $v){
-            $icdVs[$v->diagename] = $v->diagcode;
+            $lowerD = strtolower($v->diagename);
+
+            $icdVs[$lowerD] = $v->diagcode;
         }
 
         $icdSs = [];
         foreach ($icdS as $s){
-            $icdSs[$s->diagename] = $s->diagcode;
+            $lowerD = strtolower($s->diagename);
+            $icdSs[$lowerD] = $s->diagcode;
         }
 
 
@@ -56,12 +59,13 @@ class PrepareDataController extends Controller
             $diags = $this->splitList($diags);
 
             foreach ($diags as $diag){
+                $diag = trim($diag);
+                $diag = strtolower($diag);
+
                 if (array_key_exists($diag,$icdVs)){
                     $diagV = $icdVs[$diag];
                     $health->icd_v = $diagV;
                 }
-
-                $diag = trim($diag);
 
                 if (array_key_exists($diag,$icdSs)){
                     $diagS= $icdSs[$diag];
@@ -74,10 +78,7 @@ class PrepareDataController extends Controller
                         $health->{$col_diag."2"} = $diagS;
                     }
                 }
-
-
             }
-            dd($health);
             $health->save();
         }
     }
