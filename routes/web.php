@@ -18,6 +18,9 @@ Route::get('/', function () {
 });
 
 
+Route::get('/prepareDiag', [\App\Http\Controllers\PrepareDataController::class, 'prepareDiag']);
+Route::get('/prepareICD10', [\App\Http\Controllers\PrepareDataController::class, 'prepareICD10']);
+
 
 Route::get('/unionData', [\App\Http\Controllers\DataPrepareController::class, 'unionData']);
 Route::get('/joinDataLogic', [\App\Http\Controllers\DataPrepareController::class, 'joinDataLogic']);
